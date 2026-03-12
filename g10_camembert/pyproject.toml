@@ -2,7 +2,7 @@
 name = "g10-camembert"
 version = "1.0.0"
 description = "Fine-tuning CamemBERT sur Allociné — Protocole P02 : Régularisation & Généralisation"
-authors = ["Groupe G10 <g10@university.fr>"]
+authors = ["Groupe G10"]
 readme = "README.md"
 license = "MIT"
 packages = [{ include = "g10_camembert", from = "src" }]
