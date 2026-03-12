@@ -22,7 +22,7 @@ import typer
 from loguru import logger
 from torch.utils.data import DataLoader, Dataset
 
-from g10_camembert.utils.metrics import compute_sharpness
+from g10_camembert.metrics import compute_sharpness
 
 
 def _filter_normalize_direction(

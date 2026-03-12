@@ -23,8 +23,8 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader, Dataset
 from transformers import get_linear_schedule_with_warmup
 
-from g10_camembert.utils.metrics import compute_metrics
-from g10_camembert.utils.seed import set_seed
+from g10_camembert.metrics import compute_metrics
+from g10_camembert.seed import set_seed
 
 
 # ── Types ─────────────────────────────────────────────────────────────────────
@@ -301,9 +301,10 @@ def train_model(
 def _cli_train(
     config: str = typer.Option("configs/config.py", help="Chemin config Python"),
 ) -> None:
-    from g10_camembert.utils.config import load_config
-    from g10_camembert.data import load_allocine, prepare_splits, AllocinéDataset
-    from g10_camembert.models.camembert import load_camembert, load_tokenizer, get_device
+    from g10_camembert.config_loader import load_config
+    from g10_camembert.loader import load_allocine, prepare_splits
+    from g10_camembert.dataset import AllocinéDataset
+    from g10_camembert.camembert import load_camembert, load_tokenizer, get_device
 
     cfg = load_config(config)
     device = get_device()

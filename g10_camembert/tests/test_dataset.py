@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 class TestBalancedSubsample:
     def test_balanced_output(self):
-        from g10_camembert.data.loader import balanced_subsample
+        from g10_camembert.loader import balanced_subsample
 
         # Jeu de données synthétique déséquilibré
         examples = [{"review": f"text {i}", "label": i % 2} for i in range(100)]
@@ -18,7 +18,7 @@ class TestBalancedSubsample:
         assert labels.count(1) == 20
 
     def test_reproducibility(self):
-        from g10_camembert.data.loader import balanced_subsample
+        from g10_camembert.loader import balanced_subsample
 
         examples = [{"review": f"text {i}", "label": i % 2} for i in range(100)]
         r1 = balanced_subsample(examples, n_per_class=10, seed=42)
@@ -27,7 +27,7 @@ class TestBalancedSubsample:
         assert [ex["review"] for ex in r1] == [ex["review"] for ex in r2]
 
     def test_different_seeds(self):
-        from g10_camembert.data.loader import balanced_subsample
+        from g10_camembert.loader import balanced_subsample
 
         examples = [{"review": f"text {i}", "label": i % 2} for i in range(200)]
         r1 = balanced_subsample(examples, n_per_class=30, seed=1)

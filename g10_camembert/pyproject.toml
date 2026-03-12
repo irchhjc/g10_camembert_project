@@ -49,11 +49,9 @@ plotly         = "^5.20.0"
 kaleido        = { version = "^0.2.1", markers = "python_version < '3.11'" }
 
 [tool.poetry.scripts]
-g10-train      = "g10_camembert.training.trainer:main"
-g10-optimize   = "g10_camembert.optimization.optuna_search:main"
-g10-evaluate   = "g10_camembert.training.evaluator:main"
-g10-landscape  = "g10_camembert.analysis.loss_landscape:main"
-g10-report     = "g10_camembert.visualization.report:main"
+g10-train      = "g10_camembert.trainer:main"
+g10-optimize   = "g10_camembert.optuna_search:main"
+g10-landscape  = "g10_camembert.loss_landscape:main"
 
 [tool.black]
 line-length    = 100

@@ -237,7 +237,7 @@ def plot_loss_landscape(
 
     for i, (lbl, (alphas, losses)) in enumerate(landscape_results.items()):
         s = styles[i % len(styles)]
-        from g10_camembert.utils.metrics import compute_sharpness
+        from g10_camembert.metrics import compute_sharpness
         base = losses[len(losses) // 2]
         sharp = compute_sharpness(base, losses)
         axes[0].plot(alphas, losses, color=s["color"], lw=2.5, ls=s["ls"],

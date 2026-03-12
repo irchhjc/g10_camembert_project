@@ -17,9 +17,9 @@ import typer
 from loguru import logger
 from torch.utils.data import Dataset
 
-from g10_camembert.models.camembert import load_camembert, get_device
-from g10_camembert.training.trainer import train_model, TrainingResult
-from g10_camembert.utils.metrics import generalization_gap
+from g10_camembert.camembert import load_camembert, get_device
+from g10_camembert.trainer import train_model, TrainingResult
+from g10_camembert.metrics import generalization_gap
 
 
 # Grille du protocole P02
@@ -135,9 +135,10 @@ def run_grid_search(
 def _cli_grid(
     config: str = typer.Option("configs/config.py"),
 ) -> None:
-    from g10_camembert.utils.config import load_config
-    from g10_camembert.data import load_allocine, prepare_splits, AllocinéDataset
-    from g10_camembert.models.camembert import load_tokenizer
+    from g10_camembert.config_loader import load_config
+    from g10_camembert.loader import load_allocine, prepare_splits
+    from g10_camembert.dataset import AllocinéDataset
+    from g10_camembert.camembert import load_tokenizer
 
     cfg = load_config(config)
     dataset = load_allocine()

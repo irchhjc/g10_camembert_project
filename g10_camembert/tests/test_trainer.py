@@ -4,7 +4,7 @@ import pytest
 import torch
 from unittest.mock import MagicMock, patch
 
-from g10_camembert.utils.metrics import compute_metrics, generalization_gap
+from g10_camembert.metrics import compute_metrics, generalization_gap
 
 
 class TestGetOptimizerParams:

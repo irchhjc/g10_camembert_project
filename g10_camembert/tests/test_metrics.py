@@ -2,7 +2,7 @@
 
 import pytest
 import numpy as np
-from g10_camembert.utils.metrics import (
+from g10_camembert.metrics import (
     compute_metrics,
     generalization_gap,
     compute_sharpness,

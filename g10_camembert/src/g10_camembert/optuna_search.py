@@ -22,9 +22,9 @@ import typer
 from loguru import logger
 from torch.utils.data import Dataset
 
-from g10_camembert.models.camembert import get_device, load_camembert
-from g10_camembert.training.trainer import train_model
-from g10_camembert.utils.metrics import generalization_gap
+from g10_camembert.camembert import get_device, load_camembert
+from g10_camembert.trainer import train_model
+from g10_camembert.metrics import generalization_gap
 
 
 # Espace de recherche du protocole P02
@@ -202,9 +202,10 @@ def _cli_optuna(
     method: str = typer.Option("optuna", help="optuna ou grid"),
     n_trials: int = typer.Option(20),
 ) -> None:
-    from g10_camembert.utils.config import load_config
-    from g10_camembert.data import load_allocine, balanced_subsample, AllocinéDataset
-    from g10_camembert.models.camembert import load_tokenizer
+    from g10_camembert.config_loader import load_config
+    from g10_camembert.loader import load_allocine, balanced_subsample
+    from g10_camembert.dataset import AllocinéDataset
+    from g10_camembert.camembert import load_tokenizer
 
     cfg = load_config(config)
     dataset = load_allocine()
