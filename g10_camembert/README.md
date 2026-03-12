@@ -1,7 +1,7 @@
 # 🎬 G10 — CamemBERT Fine-tuning sur Allociné
 ## Protocole P02 : Régularisation & Généralisation
 
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org)
 [![Poetry](https://img.shields.io/badge/packaging-poetry-cyan.svg)](https://python-poetry.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -19,7 +19,7 @@ g10_camembert/
 ├── pyproject.toml              # Configuration Poetry & dépendances
 ├── README.md
 ├── configs/
-│   └── config.yaml             # Configuration centralisée (OmegaConf)
+│   └── config.py               # Configuration centralisée (Python pur)
 ├── src/
 │   └── g10_camembert/
 │       ├── __init__.py
@@ -46,6 +46,7 @@ g10_camembert/
 │       │   └── plots.py        # Toutes les visualisations
 │       └── utils/
 │           ├── __init__.py
+│           ├── config.py       # Chargement de la configuration Python
 │           ├── metrics.py      # F1-score, gap, sharpness
 │           └── seed.py         # Reproductibilité
 ├── tests/
@@ -93,26 +94,36 @@ poetry install --with viz
 
 ## ⚙️ Configuration
 
-Toute la configuration est centralisée dans `configs/config.yaml` :
+Toute la configuration est centralisée dans `configs/config.py` (Python pur, pas de YAML) :
 
-```yaml
-model:
-  name: "camembert-base"
-  max_seq_len: 256
-  num_labels: 2
-
-training:
-  batch_size: 16
-  grad_accum: 2
-  num_epochs: 3
-  warmup_ratio: 0.1
-  early_stopping_patience: 2
-
-protocol_p02:
-  weight_decay_grid: [1e-5, 1e-4, 1e-3, 1e-2]
-  dropout_grid: [0.0, 0.1, 0.3]
-  n_optuna_trials: 20
+```python
+CFG = _ns(
+    model=_ns(
+        name="camembert-base",
+        max_seq_len=256,
+        num_labels=2,
+    ),
+    training=_ns(
+        batch_size=16,
+        grad_accum_steps=2,
+        num_epochs=3,
+        warmup_ratio=0.1,
+        early_stopping_patience=2,
+        lr_baseline=2.0e-5,
+        weight_decay_baseline=1.0e-4,
+        dropout_baseline=0.1,
+    ),
+    protocol_p02=_ns(
+        weight_decay_grid=[1e-5, 1e-4, 1e-3, 1e-2],
+        dropout_grid=[0.0, 0.1, 0.3],
+        grid_num_epochs=2,
+        grid_lr=2.0e-5,
+    ),
+    ...
+)
 ```
+
+Modifier directement `configs/config.py` pour ajuster les hyperparamètres.
 
 ## 🏃 Usage
 
@@ -120,16 +131,16 @@ protocol_p02:
 
 ```bash
 # Entraînement baseline
-poetry run g10-train --config configs/config.yaml
+poetry run g10-train --config configs/config.py
 
 # Grid Search P02
-poetry run g10-optimize --method grid --config configs/config.yaml
+poetry run g10-optimize --method grid --config configs/config.py
 
 # Optimisation Bayésienne Optuna
-poetry run g10-optimize --method optuna --n-trials 20
+poetry run g10-optimize --method optuna --n-trials 20 --config configs/config.py
 
 # Analyse du Loss Landscape
-poetry run g10-landscape --checkpoint results/models/best_model.pt
+poetry run g10-landscape --config configs/config.py
 
 # Rapport de visualisation complet
 poetry run g10-report --results-dir results/

@@ -188,69 +188,67 @@ def analyze_landscape_multiple_configs(
     return landscape_results, sharpness_data
 
 
-def main() -> None:
-    """Point d'entrée CLI pour l'analyse du loss landscape."""
+def _cli_landscape(
+    config: str = typer.Option("configs/config.py"),
+    checkpoint: str = typer.Option(None, help="Chemin checkpoint .pt (optionnel)"),
+) -> None:
     import json as js
 
-    from omegaconf import OmegaConf
+    from g10_camembert.utils.config import load_config
     from g10_camembert.data import load_allocine, prepare_splits, AllocinéDataset
     from g10_camembert.models.camembert import load_camembert, load_tokenizer, get_device
     from g10_camembert.training.trainer import train_model
 
-    app = typer.Typer()
+    cfg = load_config(config)
+    device = get_device()
 
-    @app.command()
-    def run(
-        config: str = typer.Option("configs/config.yaml"),
-        checkpoint: str = typer.Option(None, help="Chemin checkpoint .pt (optionnel)"),
-    ) -> None:
-        cfg = OmegaConf.load(config)
-        device = get_device()
+    dataset = load_allocine()
+    train_s, val_s, _ = prepare_splits(
+        dataset, n_train=cfg.dataset.n_train_per_class,
+        n_val=cfg.dataset.n_val_per_class, seed=cfg.project.seed,
+    )
+    tokenizer = load_tokenizer(cfg.model.name)
+    train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
+    val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
 
-        dataset = load_allocine()
-        train_s, val_s, _ = prepare_splits(
-            dataset, n_train=cfg.dataset.n_train_per_class,
-            n_val=cfg.dataset.n_val_per_class, seed=cfg.project.seed,
+    # Lire les meilleurs params si disponibles
+    best_params_path = Path(cfg.project.results_dir) / "best_params.json"
+    best_wd = cfg.training.weight_decay_baseline
+    best_lr = cfg.training.lr_baseline
+    if best_params_path.exists():
+        with open(best_params_path) as f:
+            bp = js.load(f)
+        best_wd = bp["best_params"].get("weight_decay", best_wd)
+        best_lr = bp["best_params"].get("learning_rate", best_lr)
+
+    models_and_labels = []
+    for dp in list(cfg.landscape.dropout_values_to_compare):
+        model = load_camembert(dropout=dp, device=device)
+        result = train_model(
+            model, train_ds, val_ds,
+            lr=best_lr, weight_decay=best_wd,
+            batch_size=cfg.training.batch_size,
+            num_epochs=3, verbose=False,
         )
-        tokenizer = load_tokenizer(cfg.model.name)
-        train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
-        val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
+        models_and_labels.append((
+            model, f"dropout={dp:.1f}", result.best_val_f1, dp
+        ))
 
-        # Lire les meilleurs params si disponibles
-        best_params_path = Path(cfg.project.results_dir) / "best_params.json"
-        best_wd = cfg.training.weight_decay_baseline
-        best_lr = cfg.training.lr_baseline
-        if best_params_path.exists():
-            with open(best_params_path) as f:
-                bp = js.load(f)
-            best_wd = bp["best_params"].get("weight_decay", best_wd)
-            best_lr = bp["best_params"].get("learning_rate", best_lr)
+    landscape_results, sharpness = analyze_landscape_multiple_configs(
+        models_and_labels, val_ds, device=device,
+        n_points=cfg.landscape.n_points,
+        epsilon=cfg.landscape.epsilon,
+        results_dir=Path(cfg.project.results_dir),
+    )
 
-        models_and_labels = []
-        for dp in list(cfg.landscape.dropout_values_to_compare):
-            model = load_camembert(dropout=dp, device=device)
-            result = train_model(
-                model, train_ds, val_ds,
-                lr=best_lr, weight_decay=best_wd,
-                batch_size=cfg.training.batch_size,
-                num_epochs=3, verbose=False,
-            )
-            models_and_labels.append((
-                model, f"dropout={dp:.1f}", result.best_val_f1, dp
-            ))
+    print("\nSharpness summary :")
+    for d in sharpness:
+        print(f"  {d['label']:20s} | sharpness={d['sharpness']:.5f} | F1={d['val_f1']:.4f}")
 
-        landscape_results, sharpness = analyze_landscape_multiple_configs(
-            models_and_labels, val_ds, device=device,
-            n_points=cfg.landscape.n_points,
-            epsilon=cfg.landscape.epsilon,
-            results_dir=Path(cfg.project.results_dir),
-        )
 
-        print("\nSharpness summary :")
-        for d in sharpness:
-            print(f"  {d['label']:20s} | sharpness={d['sharpness']:.5f} | F1={d['val_f1']:.4f}")
-
-    app()
+def main() -> None:
+    """Point d'entrée CLI pour l'analyse du loss landscape."""
+    typer.run(_cli_landscape)
 
 
 if __name__ == "__main__":

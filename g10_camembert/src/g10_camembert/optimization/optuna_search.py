@@ -197,50 +197,48 @@ def run_optuna_study(
     return study
 
 
-def main() -> None:
-    """Point d'entrée CLI pour l'optimisation Optuna."""
-    from omegaconf import OmegaConf
+def _cli_optuna(
+    config: str = typer.Option("configs/config.py"),
+    method: str = typer.Option("optuna", help="optuna ou grid"),
+    n_trials: int = typer.Option(20),
+) -> None:
+    from g10_camembert.utils.config import load_config
     from g10_camembert.data import load_allocine, balanced_subsample, AllocinéDataset
     from g10_camembert.models.camembert import load_tokenizer
 
-    app = typer.Typer()
+    cfg = load_config(config)
+    dataset = load_allocine()
+    tokenizer = load_tokenizer(cfg.model.name)
 
-    @app.command()
-    def run(
-        config: str = typer.Option("configs/config.yaml"),
-        method: str = typer.Option("optuna", help="optuna ou grid"),
-        n_trials: int = typer.Option(20),
-    ) -> None:
-        cfg = OmegaConf.load(config)
-        dataset = load_allocine()
-        tokenizer = load_tokenizer(cfg.model.name)
+    # Datasets réduits pour Optuna
+    train_s = balanced_subsample(
+        dataset["train"],
+        cfg.dataset.n_optuna_train_per_class,
+        seed=cfg.project.seed,
+    )
+    val_s = balanced_subsample(
+        dataset["validation"],
+        cfg.dataset.n_optuna_val_per_class,
+        seed=cfg.project.seed,
+    )
+    train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
+    val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
 
-        # Datasets réduits pour Optuna
-        train_s = balanced_subsample(
-            dataset["train"],
-            cfg.dataset.n_optuna_train_per_class,
-            seed=cfg.project.seed,
-        )
-        val_s = balanced_subsample(
-            dataset["validation"],
-            cfg.dataset.n_optuna_val_per_class,
-            seed=cfg.project.seed,
-        )
-        train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
-        val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
+    study = run_optuna_study(
+        train_ds,
+        val_ds,
+        study_name=cfg.optuna.study_name,
+        n_trials=n_trials,
+        seed=cfg.project.seed,
+        results_dir=Path(cfg.project.results_dir),
+    )
+    print(f"\nMeilleur F1-val : {study.best_value:.4f}")
+    print(f"Meilleurs params : {study.best_params}")
 
-        study = run_optuna_study(
-            train_ds,
-            val_ds,
-            study_name=cfg.optuna.study_name,
-            n_trials=n_trials,
-            seed=cfg.project.seed,
-            results_dir=Path(cfg.project.results_dir),
-        )
-        print(f"\nMeilleur F1-val : {study.best_value:.4f}")
-        print(f"Meilleurs params : {study.best_params}")
 
-    app()
+def main() -> None:
+    """Point d'entrée CLI pour l'optimisation Optuna."""
+    typer.run(_cli_optuna)
 
 
 if __name__ == "__main__":

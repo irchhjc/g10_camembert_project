@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════════
 set -euo pipefail
 
-CONFIG="configs/config.yaml"
+CONFIG="configs/config.py"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="results/pipeline_${TIMESTAMP}.log"
 
@@ -43,7 +43,7 @@ poetry run g10-landscape --config "${CONFIG}" 2>&1 | tee -a "${LOG_FILE}"
 # ── Synthèse ────────────────────────────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════════"
-echo "  ✅ Pipeline terminé"
+echo "  Pipeline terminé"
 echo "  Résultats dans : results/"
 echo "  Log            : ${LOG_FILE}"
 echo "═══════════════════════════════════════════════════"

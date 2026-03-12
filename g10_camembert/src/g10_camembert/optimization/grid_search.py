@@ -13,6 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import typer
 from loguru import logger
 from torch.utils.data import Dataset
 
@@ -129,42 +130,43 @@ def run_grid_search(
     return df_grid, grid_histories
 
 
-def main() -> None:
-    """Point d'entrée CLI pour le grid search."""
-    import typer
-    from omegaconf import OmegaConf
+# ── CLI Entry point ────────────────────────────────────────────────────────────
+
+def _cli_grid(
+    config: str = typer.Option("configs/config.py"),
+) -> None:
+    from g10_camembert.utils.config import load_config
     from g10_camembert.data import load_allocine, prepare_splits, AllocinéDataset
     from g10_camembert.models.camembert import load_tokenizer
 
-    app = typer.Typer()
+    cfg = load_config(config)
+    dataset = load_allocine()
+    train_s, val_s, _ = prepare_splits(
+        dataset,
+        n_train=cfg.dataset.n_train_per_class,
+        n_val=cfg.dataset.n_val_per_class,
+        seed=cfg.project.seed,
+    )
+    tokenizer = load_tokenizer(cfg.model.name)
+    train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
+    val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
 
-    @app.command()
-    def run(config: str = typer.Option("configs/config.yaml")) -> None:
-        cfg = OmegaConf.load(config)
-        dataset = load_allocine()
-        train_s, val_s, _ = prepare_splits(
-            dataset,
-            n_train=cfg.dataset.n_train_per_class,
-            n_val=cfg.dataset.n_val_per_class,
-            seed=cfg.project.seed,
-        )
-        tokenizer = load_tokenizer(cfg.model.name)
-        train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
-        val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
+    df, histories = run_grid_search(
+        train_ds,
+        val_ds,
+        weight_decay_grid=list(cfg.protocol_p02.weight_decay_grid),
+        dropout_grid=list(cfg.protocol_p02.dropout_grid),
+        lr=cfg.protocol_p02.grid_lr,
+        num_epochs=cfg.protocol_p02.grid_num_epochs,
+        results_dir=Path(cfg.project.results_dir),
+        seed=cfg.project.seed,
+    )
+    print(df.to_string(index=False))
 
-        df, histories = run_grid_search(
-            train_ds,
-            val_ds,
-            weight_decay_grid=list(cfg.protocol_p02.weight_decay_grid),
-            dropout_grid=list(cfg.protocol_p02.dropout_grid),
-            lr=cfg.protocol_p02.grid_lr,
-            num_epochs=cfg.protocol_p02.grid_num_epochs,
-            results_dir=Path(cfg.project.results_dir),
-            seed=cfg.project.seed,
-        )
-        print(df.to_string(index=False))
 
-    app()
+def main() -> None:
+    """Point d'entrée CLI pour le grid search."""
+    typer.run(_cli_grid)
 
 
 if __name__ == "__main__":

@@ -14,6 +14,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
+import typer
+
 import numpy as np
 import torch
 from loguru import logger
@@ -296,54 +298,50 @@ def train_model(
 
 # ── CLI Entry point ────────────────────────────────────────────────────────────
 
-def main() -> None:
-    """Point d'entrée CLI pour l'entraînement baseline."""
-    import typer
-    from omegaconf import OmegaConf
-
+def _cli_train(
+    config: str = typer.Option("configs/config.py", help="Chemin config Python"),
+) -> None:
+    from g10_camembert.utils.config import load_config
     from g10_camembert.data import load_allocine, prepare_splits, AllocinéDataset
     from g10_camembert.models.camembert import load_camembert, load_tokenizer, get_device
 
-    app = typer.Typer()
+    cfg = load_config(config)
+    device = get_device()
 
-    @app.command()
-    def run(
-        config: str = typer.Option("configs/config.yaml", help="Chemin config YAML"),
-    ) -> None:
-        cfg = OmegaConf.load(config)
-        device = get_device()
+    dataset = load_allocine()
+    train_s, val_s, test_s = prepare_splits(
+        dataset,
+        n_train=cfg.dataset.n_train_per_class,
+        n_val=cfg.dataset.n_val_per_class,
+        n_test=cfg.dataset.n_test_per_class,
+        seed=cfg.project.seed,
+    )
+    tokenizer = load_tokenizer(cfg.model.name, cfg.model.max_seq_len)
+    train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
+    val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
+    test_ds = AllocinéDataset(test_s, tokenizer, cfg.dataset.max_seq_len)
 
-        dataset = load_allocine()
-        train_s, val_s, test_s = prepare_splits(
-            dataset,
-            n_train=cfg.dataset.n_train_per_class,
-            n_val=cfg.dataset.n_val_per_class,
-            n_test=cfg.dataset.n_test_per_class,
-            seed=cfg.project.seed,
-        )
-        tokenizer = load_tokenizer(cfg.model.name, cfg.model.max_seq_len)
-        train_ds = AllocinéDataset(train_s, tokenizer, cfg.dataset.max_seq_len)
-        val_ds = AllocinéDataset(val_s, tokenizer, cfg.dataset.max_seq_len)
-        test_ds = AllocinéDataset(test_s, tokenizer, cfg.dataset.max_seq_len)
+    model = load_camembert(
+        dropout=cfg.training.dropout_baseline,
+        device=device,
+    )
+    result = train_model(
+        model, train_ds, val_ds,
+        lr=cfg.training.lr_baseline,
+        weight_decay=cfg.training.weight_decay_baseline,
+        batch_size=cfg.training.batch_size,
+        grad_accum=cfg.training.grad_accum_steps,
+        num_epochs=cfg.training.num_epochs,
+        device=device,
+        seed=cfg.project.seed,
+    )
+    test_metrics = evaluate(model, test_ds, device=device, verbose=True)
+    logger.info(f"F1-test baseline : {test_metrics['f1_macro']:.4f}")
 
-        model = load_camembert(
-            dropout=cfg.training.dropout_baseline,
-            device=device,
-        )
-        result = train_model(
-            model, train_ds, val_ds,
-            lr=cfg.training.lr_baseline,
-            weight_decay=cfg.training.weight_decay_baseline,
-            batch_size=cfg.training.batch_size,
-            grad_accum=cfg.training.grad_accum_steps,
-            num_epochs=cfg.training.num_epochs,
-            device=device,
-            seed=cfg.project.seed,
-        )
-        test_metrics = evaluate(model, test_ds, device=device, verbose=True)
-        logger.info(f"F1-test baseline : {test_metrics['f1_macro']:.4f}")
 
-    app()
+def main() -> None:
+    """Point d'entrée CLI pour l'entraînement baseline."""
+    typer.run(_cli_train)
 
 
 if __name__ == "__main__":
