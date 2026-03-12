@@ -135,7 +135,7 @@ poetry run python run_pipeline.py
 ### Via les entry points Poetry (CLI)
 
 ```bash
-pretry run g10-train    --config configs/config.py
+poetry run g10-train    --config configs/config.py
 poetry run g10-optimize --method grid   --config configs/config.py
 poetry run g10-optimize --method optuna --n-trials 20 --config configs/config.py
 poetry run g10-landscape --config configs/config.py
