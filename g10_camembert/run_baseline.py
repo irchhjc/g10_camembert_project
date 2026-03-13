@@ -3,6 +3,10 @@
 Entraînement baseline CamemBERT — Allociné.
 Usage : poetry run python run_baseline.py
 """
+import json
+from datetime import datetime
+from pathlib import Path
+
 from configs.config import CFG
 from g10_camembert.loader import load_allocine, prepare_splits
 from g10_camembert.dataset import AllocinéDataset
@@ -39,3 +43,48 @@ if __name__ == "__main__":
     )
     test_metrics = evaluate(model, test_ds, device=device, verbose=True)
     logger.info(f"F1-test baseline : {test_metrics['f1_macro']:.4f}")
+
+    # ── Sauvegarde JSON ──────────────────────────────────────────
+    results_dir = Path(CFG.project.results_dir)
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    baseline_data = {
+        "timestamp": datetime.now().isoformat(),
+        "config": {
+            "model": CFG.model.name,
+            "lr": CFG.training.lr_baseline,
+            "weight_decay": CFG.training.weight_decay_baseline,
+            "dropout": CFG.training.dropout_baseline,
+            "batch_size": CFG.training.batch_size,
+            "grad_accum_steps": CFG.training.grad_accum_steps,
+            "num_epochs": CFG.training.num_epochs,
+            "n_train_per_class": CFG.dataset.n_train_per_class,
+            "n_val_per_class": CFG.dataset.n_val_per_class,
+            "n_test_per_class": CFG.dataset.n_test_per_class,
+            "max_seq_len": CFG.dataset.max_seq_len,
+            "seed": CFG.project.seed,
+        },
+        "train": {
+            "best_val_f1": result.best_val_f1,
+            "best_epoch": result.best_epoch,
+            "time_s": result.time_s,
+            "history": {
+                "train_loss": result.history.train_loss,
+                "val_loss": result.history.val_loss,
+                "train_f1": result.history.train_f1,
+                "val_f1": result.history.val_f1,
+                "train_acc": result.history.train_acc,
+                "val_acc": result.history.val_acc,
+            },
+        },
+        "test": {
+            "f1_macro": test_metrics["f1_macro"],
+            "accuracy": test_metrics["accuracy"],
+            "loss": test_metrics["loss"],
+        },
+    }
+
+    out_path = results_dir / "baseline_results.json"
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(baseline_data, f, indent=2, ensure_ascii=False)
+    logger.info(f"✅ Résultats baseline sauvegardés : {out_path}")

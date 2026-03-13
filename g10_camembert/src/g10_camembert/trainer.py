@@ -19,6 +19,7 @@ import typer
 import numpy as np
 import torch
 from loguru import logger
+from rich.progress import track
 from torch.optim import AdamW
 from torch.utils.data import DataLoader, Dataset
 from transformers import get_linear_schedule_with_warmup
@@ -60,7 +61,7 @@ def get_optimizer_params(
 
     Exclut les biais et paramètres LayerNorm du weight decay,
     conformément à la pratique standard pour les Transformers
-    (Loshchilov & Hutter, 2019 ; Devlin et al., 2019).
+    
 
     Args:
         model:        Modèle CamemBERT.
@@ -136,7 +137,7 @@ def evaluate(
     metrics["loss"] = total_loss / len(loader)
 
     if verbose:
-        from g10_camembert.utils.metrics import full_classification_report
+        from g10_camembert.metrics import full_classification_report
         label_names = ["Négatif", "Positif"]
         print(full_classification_report(all_labels, all_preds, label_names))
 
@@ -166,7 +167,7 @@ def train_model(
     Protocole d'entraînement :
     1. AdamW avec exclusion biais/LayerNorm du weight decay
     2. Scheduler linéaire avec warmup (10% des steps)
-    3. Gradient accumulation (batch effectif = batch_size × grad_accum)
+    3. Gradient accumulation (batch effectif = batch_size * grad_accum)
     4. Early stopping sur F1-val (patience configurable)
 
     Args:
@@ -221,7 +222,9 @@ def train_model(
         train_loss, all_labels, all_preds = 0.0, [], []
         optimizer.zero_grad()
 
-        for step, batch in enumerate(train_loader):
+        for step, batch in enumerate(
+            track(train_loader, description=f"  Époque {epoch}/{num_epochs}", total=len(train_loader), transient=True)
+        ):
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device)
@@ -284,7 +287,7 @@ def train_model(
     elapsed = time.time() - t_start
     if verbose:
         logger.info(
-            f"  ✅ Terminé en {elapsed:.0f}s | "
+            f" Terminé en {elapsed:.0f}s | "
             f"Meilleur F1-val : {best_val_f1:.4f} (époque {best_epoch})"
         )
 

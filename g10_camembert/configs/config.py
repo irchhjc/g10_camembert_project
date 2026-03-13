@@ -47,7 +47,7 @@ CFG = _ns(
     training=_ns(
         batch_size=16,
         grad_accum_steps=2,         # batch effectif = 32
-        num_epochs=3,
+        num_epochs=2,
         warmup_ratio=0.1,
         early_stopping_patience=2,
         lr_baseline=2.0e-5,
