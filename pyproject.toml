@@ -45,6 +45,7 @@ mypy           = "^1.9.0"
 pre-commit     = "^3.7.0"
 ipykernel      = "^6.29.0"
 nbconvert      = "^7.16.0"
+optuna-dashboard = "^0.20.0"
 
 [tool.poetry.group.viz.dependencies]
 plotly         = "^5.20.0"
