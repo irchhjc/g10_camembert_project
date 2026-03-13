@@ -1,7 +1,7 @@
 # 🎬 G10 — CamemBERT Fine-tuning sur Allociné
 ## Protocole P02 : Régularisation & Généralisation
 
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org)
 [![Poetry](https://img.shields.io/badge/packaging-poetry-cyan.svg)](https://python-poetry.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -17,52 +17,40 @@
 ```
 g10_camembert/
 ├── pyproject.toml              # Configuration Poetry & dépendances
-├── README.md
+├── README.md                   # Ce fichier
 ├── configs/
 │   └── config.py               # Configuration centralisée (Python pur)
+├── run_baseline.py             # Exécution entraînement baseline
+├── run_grid_search.py          # Exécution Grid Search P02
+├── run_optuna.py               # Exécution optimisation Optuna
+├── run_landscape.py            # Exécution analyse Loss Landscape
+├── run_pipeline.py             # Pipeline complet (toutes étapes)
+├── scripts/                    # (optionnel, pour extensions futures)
 ├── src/
-│   └── g10_camembert/
+│   └── g10_camembert/          # Package Python principal
 │       ├── __init__.py
-│       ├── data/
-│       │   ├── __init__.py
-│       │   ├── dataset.py      # AllocinéDataset (PyTorch)
-│       │   └── loader.py       # Chargement & sous-échantillonnage
-│       ├── models/
-│       │   ├── __init__.py
-│       │   └── camembert.py    # Chargement CamemBERT configurable
-│       ├── training/
-│       │   ├── __init__.py
-│       │   ├── trainer.py      # Boucle AdamW + warmup + early stopping
-│       │   └── evaluator.py    # Évaluation finale & rapport
-│       ├── optimization/
-│       │   ├── __init__.py
-│       │   ├── grid_search.py  # Grid Search P02 (wd × dropout)
-│       │   └── optuna_search.py# Optimisation Bayésienne Optuna/TPE
-│       ├── analysis/
-│       │   ├── __init__.py
-│       │   └── loss_landscape.py # Paysage de perte & sharpness
-│       ├── visualization/
-│       │   ├── __init__.py
-│       │   └── plots.py        # Toutes les visualisations
-│       └── utils/
-│           ├── __init__.py
-│           ├── config.py       # Chargement de la configuration Python
-│           ├── metrics.py      # F1-score, gap, sharpness
-│           └── seed.py         # Reproductibilité
-├── tests/
-│   ├── test_dataset.py
-│   ├── test_metrics.py
-│   └── test_trainer.py
+│       ├── camembert.py        # Chargement CamemBERT configurable
+│       ├── config_loader.py    # Chargement de la configuration
+│       ├── dataset.py          # AllocinéDataset (PyTorch)
+│       ├── grid_search.py      # Grid Search P02 (wd × dropout)
+│       ├── loader.py           # Chargement & sous-échantillonnage
+│       ├── loss_landscape.py   # Paysage de perte & sharpness
+│       ├── metrics.py          # F1-score, gap, sharpness
+│       ├── optuna_search.py    # Optimisation Bayésienne Optuna/TPE
+│       ├── plots.py            # Toutes les visualisations
+│       ├── seed.py             # Reproductibilité
+│       └── trainer.py          # Boucle AdamW + warmup + early stopping
 ├── notebooks/
 │   └── g10-projet-mloptimisation-enrichi.ipynb
-├── scripts/
-│   ├── run_baseline.sh
-│   ├── run_grid_search.sh
-│   ├── run_optuna.sh
-│   └── run_full_pipeline.sh
-└── results/
-    ├── figures/                # Graphiques générés
-    └── models/                 # Checkpoints sauvegardés
+├── results/
+│   ├── baseline_results.json   # Résultats baseline
+│   ├── best_params.json        # Meilleurs hyperparamètres
+│   ├── grid_p02_results.csv    # Résultats grid search
+│   ├── optuna.db               # Base de données Optuna
+│   ├── optuna_study.pkl        # Étude Optuna (pickle)
+│   ├── sharpness_results.json  # Résultats sharpness
+│   └── summary.csv             # Résumé des résultats
+└── dist/                       # (optionnel, distribution si build)
 ```
 
 ## 🚀 Installation
@@ -127,35 +115,33 @@ Modifier directement `configs/config.py` pour ajuster les hyperparamètres.
 
 ## 🏃 Usage
 
-### Via les scripts Poetry (entry points)
+### Scripts d'exécution (dossier scripts/)
 
 ```bash
 # Entraînement baseline
-poetry run g10-train --config configs/config.py
+poetry run python scripts/run_baseline.py
 
 # Grid Search P02
-poetry run g10-optimize --method grid --config configs/config.py
+poetry run python scripts/run_grid_search.py
 
 # Optimisation Bayésienne Optuna
-poetry run g10-optimize --method optuna --n-trials 20 --config configs/config.py
+poetry run python scripts/run_optuna.py         # n_trials par défaut (défini dans config)
+poetry run python scripts/run_optuna.py 30      # nb trials custom
 
 # Analyse du Loss Landscape
-poetry run g10-landscape --config configs/config.py
+poetry run python scripts/run_landscape.py
 
-# Rapport de visualisation complet
-poetry run g10-report --results-dir results/
+# Pipeline complet (toutes les étapes)
+poetry run python scripts/run_pipeline.py
 ```
 
-### Via les scripts shell
+### Via les entry points Poetry (CLI)
 
 ```bash
-# Pipeline complet
-bash scripts/run_full_pipeline.sh
-
-# Étapes individuelles
-bash scripts/run_baseline.sh
-bash scripts/run_grid_search.sh
-bash scripts/run_optuna.sh
+poetry run g10-train    --config configs/config.py
+poetry run g10-optimize --method grid   --config configs/config.py
+poetry run g10-optimize --method optuna --n-trials 20 --config configs/config.py
+poetry run g10-landscape --config configs/config.py
 ```
 
 ## 📊 Résultats clés
