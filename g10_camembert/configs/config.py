@@ -16,8 +16,6 @@ CFG = _ns(
         protocol="P02",
         seed=42,
         results_dir="results",
-        figures_dir="results/figures",
-        models_dir="results/models",
     ),
 
     # ── Dataset ────────────────────────────────────────────────
