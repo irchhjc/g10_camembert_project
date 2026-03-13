@@ -1,0 +1,60 @@
+/* Custom CSS for a beautiful dashboard */
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+    font-family: 'Montserrat', sans-serif;
+}
+
+h1, h2, h4 {
+    color: #2d3a4a;
+    letter-spacing: 1px;
+}
+
+.container {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.08);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+}
+
+hr {
+    border: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%);
+    margin: 2rem 0;
+}
+
+table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet {
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet th {
+    background: #343a40;
+    color: #fff;
+    font-weight: bold;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet td {
+    background: #fff;
+    color: #222;
+}
+
+.dash-graph .js-plotly-plot .plotly {
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    background: #e0e7ef;
+}
+::-webkit-scrollbar-thumb {
+    background: #b0b8c1;
+    border-radius: 8px;
+}
