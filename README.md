@@ -166,7 +166,7 @@ poetry run pytest --cov=src/g10_camembert --cov-report=html
 
 ## 📝 Notebook enrichi
 
-Le notebook principal avec interprétations complètes est disponible dans
+Le notebook principal execute avec le GPU de **kaggle** avec interprétations complètes est disponible dans
 `notebooks/g10-projet-mloptimisation-enrichi.ipynb`.
 
 ```bash
@@ -195,5 +195,20 @@ L'expérience explore l'espace :
 - Keskar et al. (2017) — On Large-Batch Training for Deep Learning
 
 ## 📄 Licence
+
+---
+
+## 👥 Auteurs du projet
+
+**NGOULOU NGOUBILI Irch Défluvière**  
+**MOYO KOUONCHOU Guilaine**  
+**DOMEVENOU Kamla Wisdom**  
+*Élèves ingénieurs statisticiens économistes - 3ème Année*
+
+**Sous la supervision de :**  
+Mme MBIA NDI Marie Thérèse  
+*Enseignante à l’ISSEA*
+
+---
 
 MIT — Groupe G10, 2026
