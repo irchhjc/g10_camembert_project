@@ -9,6 +9,7 @@ L'algorithme TPE (Tree-structured Parzen Estimator) explore conjointement :
 Le pruner MedianPruner arrête précocement les trials sous-performants.
 
 Référence : Bergstra et al. (2011) — Algorithms for Hyper-Parameter Optimization.
+
 """
 
 from __future__ import annotations
