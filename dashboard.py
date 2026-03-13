@@ -34,16 +34,19 @@ sharpness = _json("sharpness_results.json")
 grid_df   = pd.read_csv(os.path.join(RES, "grid_p02_results.csv"))
 summary   = pd.read_csv(os.path.join(RES, "summary.csv"))
 
-# Charger étude Optuna
-optuna.logging.set_verbosity(optuna.logging.ERROR)
-study = optuna.load_study(
-    study_name="g10_p02_regularisation",
-    storage=f"sqlite:///{os.path.join(RES,'optuna_final.db')}",
-)
 
-# ══════════════════════════════════════════════════════════════════════
+# Lancer optuna-dashboard sans spécifier de nom de study
+if __name__ == "__main__":
+    import optuna_dashboard
+    optuna_dashboard.run_server(
+        f"sqlite:///{os.path.join(RES,'optuna_final.db')}",
+        host="127.0.0.1",
+        port=8080
+    )
+
+# ═════════════════════════════════════════════════════════════════════
 #  1.  DESIGN TOKENS
-# ══════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════
 
 BG        = "#05090F"
 BG1       = "#0B1120"
@@ -91,9 +94,9 @@ def T2(fig):
     fig.update_annotations(font=dict(color=DIM, size=12))
     return fig
 
-# ══════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════
 #  2.  COMPOSANTS UI RÉUTILISABLES
-# ══════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════
 
 def badge(txt, color=CYAN):
     return html.Span(txt, style={
