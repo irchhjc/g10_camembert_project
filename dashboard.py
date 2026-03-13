@@ -692,12 +692,18 @@ def fig_landscape_1d():
     for label, sharp, base, color in cfgs:
         a, l = _landscape_losses(sharp, base)
         noise = 0.004 * np.ones_like(a)
+        # Remplacement du fillcolor hexadécimal avec transparence par rgba
+        fillcolor_rgba = {
+            CYAN: "rgba(0,212,255,0.09)",
+            GOLD: "rgba(240,165,0,0.09)",
+            RED: "rgba(255,77,106,0.09)",
+        }.get(color, "rgba(0,0,0,0.09)")
         fig.add_trace(
             go.Scatter(
                 x=np.concatenate([a, a[::-1]]),
                 y=np.concatenate([l + noise, (l - noise)[::-1]]),
                 fill="toself",
-                fillcolor=color + "18",
+                fillcolor=fillcolor_rgba,
                 line=dict(color="rgba(0,0,0,0)"),
                 showlegend=False,
                 hoverinfo="skip",
