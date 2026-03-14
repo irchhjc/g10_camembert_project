@@ -1044,16 +1044,18 @@ def page_projet(C: dict):
         section("Auteurs & contexte académique", "Groupe G10 · 2026", "👥", C),
         grid(2,
             card([
-                html.H4("Encadrement", style={"color": C["TEXT"], "fontSize": "15px", "marginBottom": "16px", "fontWeight": "700"}),
-                info_row("Enseignant", "MBIA NDI Marie Thérèse", C["CYAN"], C),
-                info_row("Livrable", "Rapport PDF + GitHub", C["GOLD"], C),
-                info_row("Date", "13 Mars 2026", C["RED"], C),
+                html.H4("Auteurs", style={"color": C["TEXT"], "fontSize": "15px", "marginBottom": "16px", "fontWeight": "700"}),
+                html.Ul([
+                    html.Li("NGOULOU NGOUBILI Irch Défluvière", style={"color": C["CYAN"], "fontSize": "13px", "fontWeight": "600"}),
+                    html.Li("MOYO KOUONCHOU Guilaine", style={"color": C["CYAN"], "fontSize": "13px", "fontWeight": "600"}),
+                    html.Li("DOMEVENOU Kamla Wisdom", style={"color": C["CYAN"], "fontSize": "13px", "fontWeight": "600"}),
+                ], style={"marginBottom": "10px"}),
+                html.Div("Élèves ingénieurs statisticiens économistes - 3ème Année", style={"color": C["DIM"], "fontSize": "12px", "fontStyle": "italic", "marginBottom": "8px"}),
             ], C=C),
             card([
-                html.H4("Contexte", style={"color": C["TEXT"], "fontSize": "15px", "marginBottom": "16px", "fontWeight": "700"}),
-                info_row("Cours", "NLP Avancé — Fine-tuning Transformers", C["CYAN"], C),
-                info_row("Groupe", "G10 — Allociné · CamemBERT · P02", C["GOLD"], C),
-                info_row("Protocole", "P02 — Régularisation & Généralisation", C["VIOLET"], C),
+                html.H4("Encadrement", style={"color": C["TEXT"], "fontSize": "15px", "marginBottom": "16px", "fontWeight": "700"}),
+                html.Div("Mme MBIA NDI Marie Thérèse", style={"color": C["CYAN"], "fontSize": "13px", "fontWeight": "600", "marginBottom": "6px"}),
+                html.Div("Enseignante à l’ISSEA", style={"color": C["DIM"], "fontSize": "12px", "fontStyle": "italic"}),
             ], C=C),
         ),
     ])

@@ -1,6 +1,11 @@
 # 🎬 G10 — CamemBERT Fine-tuning sur Allociné
 ## Protocole P02 : Régularisation & Généralisation
 
+🚩 **Dashboard interactif en ligne :**
+👉 https://g10-ml-optimisation.onrender.com
+
+
+
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org)
 [![Poetry](https://img.shields.io/badge/packaging-poetry-cyan.svg)](https://python-poetry.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -114,6 +119,62 @@ CFG = _ns(
 Modifier directement `configs/config.py` pour ajuster les hyperparamètres.
 
 ## 🏃 Usage
+
+## 🚦 Exécution du projet (Poetry uniquement)
+
+### 1. Installation et environnement
+
+```bash
+# Cloner le projet et installer les dépendances
+git clone <repo-url>
+cd g10_camembert_project
+poetry install
+poetry shell  # (optionnel, pour activer l'environnement)
+```
+
+### 2. Lancer les scripts d'entraînement et d'optimisation
+
+```bash
+# Entraînement baseline
+poetry run python scripts/run_baseline.py
+
+# Grid Search P02
+poetry run python scripts/run_grid_search.py
+
+# Optimisation bayésienne Optuna
+poetry run python scripts/run_optuna.py
+```
+
+### 3. Explorer les résultats Optuna avec optuna-dashboard
+
+```bash
+# Lancer le dashboard interactif Optuna sur la base de données générée
+poetry run optuna-dashboard sqlite:///results/optuna.db
+# Ouvre ensuite http://127.0.0.1:8080 dans ton navigateur
+```
+
+### 4. Explorer les trials Optuna (analyse avancée)
+
+La base de données des essais Optuna est stockée dans :
+```
+results/optuna.db
+```
+Tu peux l'explorer avec optuna-dashboard, ou en Python avec :
+```python
+import optuna
+study = optuna.load_study(study_name="G10_regularisation", storage="sqlite:///results/optuna.db")
+print(study.trials_dataframe())
+```
+
+### 5. Dashboard interactif (Dash)
+
+Le dashboard complet conçu avec Dash est accessible en local :
+```bash
+poetry run python dashboard.py
+# puis ouvre http://127.0.0.1:8050
+```
+Ou en ligne (hébergement public) :
+👉 https://g10-ml-optimisation.onrender.com
 
 ### Scripts d'exécution (dossier scripts/)
 
